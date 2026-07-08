@@ -18,7 +18,7 @@ Questo progetto è stato sviluppato come progetto personale e didattico durante 
 Essendo scritto in puro Python, non richiede installazioni tramite pip (fatta eccezione per librerie opzionali esterne come Matplotlib per i grafici) e non utilizza moduli compilati in C. E' sufficiente clonare la repository e importare il modulo nel proprio script.
 
 ```python
-import numpy_copy_better as nc
+import numpy_copy as nc
 
 # Creazione di array e operazioni di base
 a = nc.Array([[1, 2], [3, 4]])
@@ -34,7 +34,7 @@ print(risultato)
 Grazie al supporto per i numeri complessi e alla possibilita di eseguire calcoli su intere griglie di dati contemporaneamente, la libreria e in grado di calcolare insiemi matematici avanzati con poche righe di codice.
 
 ```python
-import numpy_copy_better as nc
+import numpy_copy as nc
 import matplotlib.pyplot as plt
 
 # Creazione del piano complesso

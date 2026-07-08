@@ -4,7 +4,6 @@ from math import nan
 import sys
 from typing import Any
 
-
 sys.setrecursionlimit(10**7)
 
 dtypes =  type[float] | type[complex] | type[int] 
@@ -49,7 +48,10 @@ mask={
 
 def like_shape(shape, func, dtype: dtypes = float):
     if len(shape) == 1:
-        return [mask[dtype](func()) for _ in range(shape[0])]
+        if func() in mask:
+            return [mask[dtype](func()) for _ in range(shape[0])]
+        else:
+             return [func() for _ in range(shape[0])]
     return [like_shape(shape[1:], func, dtype=dtype) for _ in range(shape[0])]
 
 def dtype(self):
@@ -128,7 +130,10 @@ class Array:
                 }
             }
             if other is None:
-                return d[self.function][type(n)]
+                if self.function in d:
+                    return d[self.function][type(n)]
+                else:
+                    return self.function
             if self.function not in d:
                 return self.function
             if type(n) != type(other):
@@ -159,6 +164,8 @@ class Array:
                 self.size *= i
         self.dtype = dtype(self.body)
     def vectorize(self, o, d) -> Array:
+        def return_none():
+            return None
         def helper(lst, other, decider):
             if decider.python_method:
                 if decider.function == "__add__":
@@ -166,19 +173,25 @@ class Array:
                 raise ValueError(f"Cannot {decider.function} a non-valid array.")
             if lst == []:
                 return []
-            if not isinstance(lst[0], list) and not isinstance(other[0], list):
+            iterator = (zip(lst, other) if other is not None else zip(lst, like_shape(shape(lst), return_none)))
+            if not isinstance(lst[0], list) and ((not isinstance(other[0], list)) if other is not None else True):
                 new_l = []
-                for i, j in zip(lst, other):
+                for i, j in iterator:
                     if j == 0 and decider.function in {"__truediv__", "__floordiv__"}:
                         new_l.append(nan)
+                    elif j is None:
+                        new_l.append(decider.decide_type(i,j)(i))
                     else:
                         new_l.append(decider.decide_type(i,j)(i,j))
                 return new_l
             new_l = []
-            for i, j in zip(lst, other):
+            for i, j in iterator:
                 new_l.append(helper(i, j, decider))
             return new_l
-        found = helper(self.body, o.body, d)
+        if o is not None:
+            found = helper(self.body, o.body, d)
+        else:
+            found = helper(self.body, o, d)
         return Array(found)
     def __add__(self, other) -> Array:
         decider = self.Decide("__add__")
@@ -263,7 +276,10 @@ class Array:
         except ModuleNotFoundError:
             raise ModuleNotFoundError("numpy is necessary to plot the array")
         return numpy.array(self.body)
+    def map_func(self, func):
+        return Array.vectorize(self, None, Array.Decide(func))
         
+
 
 def linspace(start, stop, points, dtype: dtypes = float) -> Array:
     start = Fraction(start)

@@ -48,7 +48,7 @@ mask={
 
 def like_shape(shape, func, dtype: dtypes = float):
     if len(shape) == 1:
-        if func() in mask:
+        if type(func()) in mask:
             return [mask[dtype](func()) for _ in range(shape[0])]
         else:
              return [func() for _ in range(shape[0])]

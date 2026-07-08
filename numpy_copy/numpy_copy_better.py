@@ -184,6 +184,10 @@ class Array:
         decider = self.Decide("__add__")
         decider.is_python(self, other)
         return Array.vectorize(self, decider.decide_other(self, other), decider)
+    def __mod__(self, other):
+        decider = self.Decide("__mod__")
+        decider.is_python(self, other)
+        return Array.vectorize(self, decider.decide_other(self, other), decider)
     def __radd__(self, other) -> Array:
         return self + other
     def __mul__(self, other) -> Array:
@@ -205,7 +209,7 @@ class Array:
     def __rmul__(self, other) -> Array:
         return self*other
     def __neg__(self) -> Array:
-        return self*(-1)
+        return self*(self.dtype(-1))
     def __sub__(self, other) -> Array:
         return self + (-other)
     def __pos__(self) -> Array:
@@ -262,6 +266,8 @@ class Array:
         
 
 def linspace(start, stop, points, dtype: dtypes = float) -> Array:
+    start = Fraction(start)
+    stop = Fraction(stop)
     step = Fraction(stop-start, points-1) 
     arr = [mask[dtype](start)]
     current = start
